@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>מערכת הפעלה מרחוק</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+        #status { margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>פקודות מערכת</h1>
+
+    <button onclick="sendCommand('shutdown')">כבה את המחשב</button>
+    <button onclick="sendCommand('lock')">נעל את המחשב</button>
+    <button onclick="sendCommand('sleep')">מצב שינה</button>
+
+    <div id="status">ממתין לפקודה...</div>
+
+    <script>
+        // שימו לב: יש להחליף את הכתובת לכתובת ה-IP/דומיין של השרת שלכם
+        const SERVER_URL = 'http://127.0.0.1:5000/execute'; 
+        const statusDiv = document.getElementById('status');
+
+        function sendCommand(command) {
+            statusDiv.innerText = `שולח פקודה: ${command}...`;
+
+            fetch(SERVER_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                // שולח את הפקודה לשרת בפורמט JSON
+                body: JSON.stringify({ action: command })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('שגיאה בתקשורת עם השרת');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // מציג את תגובת השרת
+                statusDiv.innerText = `הושלם בהצלחה! סטטוס: ${data.message}`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusDiv.innerText = `שגיאה בביצוע הפקודה: ${error.message}`;
+            });
+        }
+    </script>
+</body>
+</html>
